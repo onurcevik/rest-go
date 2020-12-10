@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 var Conn *sql.DB

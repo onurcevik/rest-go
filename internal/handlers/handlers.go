@@ -116,17 +116,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //LogoutHandler handles requests to /logout path and logsout the current logged-in user and deletes the session from database
-func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-
-	// remove the cookie
-	c := &http.Cookie{
-		Name:   "token",
-		Value:  "",
-		MaxAge: -1,
-	}
-	http.SetCookie(w, c)
-	json.NewEncoder(w).Encode("You have  logged out.")
-}
 
 //ListNotesHandler lists all notes belong to the logged in user
 func ListNotesHandler(w http.ResponseWriter, r *http.Request) {

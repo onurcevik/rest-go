@@ -30,11 +30,6 @@ func GetJWTClaims(r *http.Request, jwtToken string) (map[string]interface{}, err
 
 //GenerateJWTTokenWithClaims Generates JWT access and refresh tokens to be sent to client side
 func GenerateJWTTokenWithClaims(username string, claims jwt.MapClaims) (string, error) {
-	// Create token
-	// token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-	// 	"username": username,
-	// 	"exp":      time.Now().Add(time.Minute * 5).Unix(),
-	// })
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	t, err := token.SignedString([]byte(jwtsecret))
