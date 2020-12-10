@@ -6,13 +6,11 @@ import (
 	"log"
 	"os"
 	"strconv"
-
-	_ "github.com/lib/pq"
 )
 
 var Conn *sql.DB
 
-func getPostgresDataSource() string {
+func GetPostgresDataSource() string {
 
 	host := os.Getenv("pghost")
 	port, err := strconv.Atoi(os.Getenv("pgport"))
@@ -26,16 +24,17 @@ func getPostgresDataSource() string {
 	return fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 }
 
-func StartDatabase() {
-	psqlInfo := getPostgresDataSource()
+// //
+// func StartDatabase() {
+// 	psqlInfo := getPostgresDataSource()
 
-	Conn, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		panic(err)
-	}
-	defer Conn.Close()
-	err = Conn.Ping()
-	if err != nil {
-		panic(err)
-	}
-}
+// 	Conn, err := sql.Open("postgres", psqlInfo)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	err = Conn.Ping()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }

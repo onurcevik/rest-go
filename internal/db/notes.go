@@ -29,3 +29,10 @@ func GetUserNotes(username string) ([]model.Note, error) {
 	}
 	return notes, nil
 }
+
+func IsResourceOwner(ID int) bool {
+	var bl bool
+	sqlstmnt := `SELECT EXISTS(SELECT * FROM notes INNER JOIN users ON notes.ownerid=users.id WHERE notes.ownerid=$1)`
+	_ = Conn.QueryRow(sqlstmnt, ID).Scan(&bl)
+	return bl
+}

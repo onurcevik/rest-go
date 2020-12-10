@@ -55,12 +55,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		VALUES ($1,$2 );
 		`
 		registerpasswd, _ := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
-		_, err := db.Conn.Exec(insertQuery, name, string(registerpasswd))
+		res, err := db.Conn.Exec(insertQuery, name, string(registerpasswd))
+
 		if err != nil {
 			//TODO log
 			w.WriteHeader(http.StatusInternalServerError)
 		}
+		id, err := res.LastInsertId()
+		if err != nil {
+			//TODO log
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		fmt.Println("LAST INSERT: ", id)
+
 		jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
+			"id":       id,
 			"username": name,
 			"exp":      time.Now().Add(time.Minute * 5).Unix(),
 		})
@@ -86,13 +95,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	name, pwd := user.Username, user.Password
-	selectQuery := `SELECT password FROM users WHERE username=$1;`
+	selectQuery := `SELECT id,password FROM users WHERE username=$1;`
 	row := db.Conn.QueryRow(selectQuery, name)
 
+	var id int
 	var hash string
 
 	//TODO println sil
-	switch err := row.Scan(&hash); err {
+	switch err := row.Scan(&id, &hash); err {
 	case sql.ErrNoRows:
 		fmt.Println("User doesnt exist in database")
 	case nil:
@@ -108,6 +118,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
+		"id":       id,
 		"username": name,
 		"exp":      time.Now().Add(time.Minute * 5).Unix(),
 	})

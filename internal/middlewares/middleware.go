@@ -25,7 +25,6 @@ func JWTmiddleware(next http.Handler) http.Handler {
 			jwtToken := authHeader[1]
 			claims, err := helpers.GetJWTClaims(r, jwtToken)
 			if err != nil {
-
 				w.WriteHeader(http.StatusUnauthorized)
 				json.NewEncoder(w).Encode("Unauthorized")
 			}

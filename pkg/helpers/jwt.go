@@ -11,6 +11,10 @@ import (
 //TODO getenv
 var jwtsecret = os.Getenv("jwtsecret")
 
+func checkAuthorization() {
+
+}
+
 func GetJWTClaims(r *http.Request, jwtToken string) (map[string]interface{}, error) {
 
 	token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
