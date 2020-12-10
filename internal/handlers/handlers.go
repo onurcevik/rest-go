@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -39,7 +38,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	err := json.Unmarshal(body, &user)
 	if err != nil {
-		log.Fatalln(err)
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	name, pwd := user.Username, user.Password
 	if len(name) > 0 {
@@ -57,7 +57,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		registerpasswd, _ := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
 		_, err := db.Conn.Exec(insertQuery, name, string(registerpasswd))
 		if err != nil {
-			panic(err)
+			//TODO log
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
 			"username": name,
@@ -81,7 +82,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	err := json.Unmarshal(body, &user)
 	if err != nil {
-		log.Fatalln(err)
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	name, pwd := user.Username, user.Password
 	selectQuery := `SELECT password FROM users WHERE username=$1;`
@@ -89,6 +91,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var hash string
 
+	//TODO println sil
 	switch err := row.Scan(&hash); err {
 	case sql.ErrNoRows:
 		fmt.Println("User doesnt exist in database")
@@ -108,6 +111,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"username": name,
 		"exp":      time.Now().Add(time.Minute * 5).Unix(),
 	})
+	if err != nil {
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(struct{ token string }{jwtToken})
@@ -123,7 +130,8 @@ func ListNotesHandler(w http.ResponseWriter, r *http.Request) {
 	username := claims["username"].(string)
 	notes, err := db.GetUserNotes(username)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(notes)
@@ -138,13 +146,15 @@ func NewNoteHandler(w http.ResponseWriter, r *http.Request) {
 	var note model.Note
 	err := json.Unmarshal(body, &note)
 	if err != nil {
-		log.Fatalln(err)
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	if len(note.Content) > 0 {
 		claims, _ := r.Context().Value("claims").(jwt.MapClaims)
 		username := claims["username"].(string)
 		if err != nil {
-			log.Fatalln(err)
+			//TODO log
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		insertQuery := `INSERT INTO notes (username, note)
 		VALUES ($1,$2 );
@@ -179,12 +189,14 @@ func GetNoteHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		integerID, err := strconv.Atoi(id)
 		if err != nil {
-			log.Fatalln(err)
+			//TODO log
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		json.NewEncoder(w).Encode(model.Note{ID: integerID, Content: content})
 		return
 	default:
-		panic(err)
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	return
 }
@@ -200,7 +212,8 @@ func DeleteNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.Conn.Exec(deleteQuery, id)
 	if err != nil {
-		panic(err)
+		//TODO log
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Note deleted")
