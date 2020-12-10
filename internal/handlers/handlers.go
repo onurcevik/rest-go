@@ -8,7 +8,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/onurcevik/restful/internal/model"
 
@@ -21,20 +23,17 @@ import (
 //IndexHandler handles requests to / path
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	name, err := helpers.GetJWTUser(r)
-	if err == http.ErrNoCookie || len(name) == 0 {
+	claims, _ := r.Context().Value("claims").(jwt.MapClaims)
+	username := claims["username"].(string)
+	if len(username) == 0 {
 		json.NewEncoder(w).Encode("Please Login or Register")
 	}
-	json.NewEncoder(w).Encode("Welcome " + name)
+	json.NewEncoder(w).Encode("Welcome " + username)
 }
 
 //RegisterHandler handles requests to /request path and allows users to request a new user
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	// if helpers.AlreadyLoggedIn(r) {
-	// 	//Redirect to ListNotesHandler
-	// 	http.Redirect(w, r, "/notes", http.StatusSeeOther)
-	// 	return
-	// }
+
 	w.Header().Set("Content-Type", "application/json")
 	body, _ := ioutil.ReadAll(r.Body)
 	var user model.User
@@ -60,17 +59,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		jwtToken, err := helpers.GenerateJWTToken(name)
-
-		c := &http.Cookie{
-			Name:     "token",
-			Value:    jwtToken,
-			HttpOnly: true,
-		}
-		http.SetCookie(w, c)
+		jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
+			"username": name,
+			"exp":      time.Now().Add(time.Minute * 5).Unix(),
+		})
 
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode("You have successfully registered.")
+		json.NewEncoder(w).Encode(struct{ token string }{jwtToken})
 		return
 	}
 	w.WriteHeader(http.StatusBadRequest)
@@ -109,16 +104,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwtToken, err := helpers.GenerateJWTToken(name)
+	jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
+		"username": name,
+		"exp":      time.Now().Add(time.Minute * 5).Unix(),
+	})
 
-	c := &http.Cookie{
-		Name:     "token",
-		Value:    jwtToken,
-		HttpOnly: true,
-	}
-	http.SetCookie(w, c)
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(struct{ token string }{jwtToken})
 
-	json.NewEncoder(w).Encode("You have successfully logged in.")
 	return
 }
 
@@ -137,11 +130,12 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 //ListNotesHandler lists all notes belong to the logged in user
 func ListNotesHandler(w http.ResponseWriter, r *http.Request) {
-	username, err := helpers.GetJWTUser(r)
+	claims, _ := r.Context().Value("claims").(jwt.MapClaims)
+	username := claims["username"].(string)
+	notes, err := db.GetUserNotes(username)
 	if err != nil {
-		log.Fatalln(err)
+		w.WriteHeader(http.StatusUnauthorized)
 	}
-	notes := db.GetUserNotes(username)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(notes)
 	return
@@ -158,7 +152,8 @@ func NewNoteHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 	if len(note.Content) > 0 {
-		username, err := helpers.GetJWTUser(r)
+		claims, _ := r.Context().Value("claims").(jwt.MapClaims)
+		username := claims["username"].(string)
 		if err != nil {
 			log.Fatalln(err)
 		}

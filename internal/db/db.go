@@ -2,38 +2,38 @@ package db
 
 import (
 	"database/sql"
-
-	"github.com/onurcevik/restful/internal/model"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
 )
 
-var (
-	Conn *sql.DB
-)
+var Conn *sql.DB
 
-func GetUserNotes(username string) []model.Note {
-	var notes []model.Note
-	sqlstmnt := `SELECT id,note FROM notes WHERE notes.username=$1`
-	rows, err := Conn.Query(sqlstmnt, username)
+func getPostgresDataSource() string {
+
+	host := os.Getenv("pghost")
+	port, err := strconv.Atoi(os.Getenv("pgport"))
+	if err != nil {
+		log.Fatalln()
+	}
+	user := os.Getenv("pguser")
+	password := os.Getenv("pgpass")
+	dbname := os.Getenv("pgdbname")
+
+	return fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+}
+
+func StartDatabase() {
+	psqlInfo := getPostgresDataSource()
+
+	Conn, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var content string
-
-		err = rows.Scan(&id, &content)
-		if err != nil {
-			panic(err)
-		}
-		notes = append(notes, model.Note{ID: id, Content: content})
-
-	}
-	// get any error encountered during iteration
-	err = rows.Err()
+	defer Conn.Close()
+	err = Conn.Ping()
 	if err != nil {
 		panic(err)
 	}
-	return notes
 }
