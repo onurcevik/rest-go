@@ -2,27 +2,16 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 
 	_ "github.com/lib/pq"
-
 	"github.com/onurcevik/restful/internal/db"
-)
-
-var (
-	host     = os.Getenv("HOST")
-	port, _  = strconv.Atoi(os.Getenv("POSTGRESPORT"))
-	user     = os.Getenv("USER")
-	password = os.Getenv("PASSWORD")
-	dbname   = os.Getenv("DBNAME")
+	"github.com/onurcevik/restful/internal/router"
 )
 
 func main() {
 
-	psqlInfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable ", user, password, dbname)
+	psqlInfo := db.GetPostgresDataSource()
 	var err error
 	db.Conn, err = sql.Open("postgres", psqlInfo)
 	if err != nil {

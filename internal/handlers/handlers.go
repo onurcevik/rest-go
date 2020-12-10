@@ -106,6 +106,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	case sql.ErrNoRows:
 		fmt.Println("User doesnt exist in database")
 	case nil:
+		//TODO sil
 		fmt.Println(hash)
 	default:
 		panic(err)
