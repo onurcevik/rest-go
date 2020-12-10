@@ -31,12 +31,12 @@ func main() {
 	// }
 	db.StartDatabase()
 	router := mux.NewRouter()
-	router.Handle("/", middlewares.JWTmiddleware(http.Handler))
-	router.HandleFunc("/", handlers.IndexHandler).Methods("GET")
+	router.Handle("/", middlewares.JWTmiddleware(http.HandlerFunc(handlers.IndexHandler))).Methods("GET")
+
 	router.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
 	router.HandleFunc("/logout", handlers.LogoutHandler).Methods("POST")
 	router.HandleFunc("/register", handlers.RegisterHandler).Methods("POST")
-	router.HandleFunc("/notes", handlers.ListNotesHandler).Methods("GET")
+	router.Handle("/notes", middlewares.JWTmiddleware(http.HandlerFunc(handlers.ListNotesHandler))).Methods("GET")
 	router.HandleFunc("/note", handlers.NewNoteHandler).Methods("POST")
 	router.HandleFunc("/note/{id}", handlers.GetNoteHandler).Methods("GET")
 	router.HandleFunc("/note/{id}", handlers.DeleteNoteHandler).Methods("DELETE")
