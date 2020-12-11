@@ -2,11 +2,14 @@ package middlewares
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/onurcevik/restful/internal/db"
+
+	"github.com/gorilla/mux"
 	"github.com/onurcevik/restful/pkg/helpers"
 )
 
@@ -18,7 +21,6 @@ func JWTmiddleware(next http.Handler) http.Handler {
 		//TODO SIL
 		fmt.Println("Header", authHeader)
 		if len(authHeader) != 2 {
-			fmt.Println("Malformed token")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Malformed Token"))
 		} else {
@@ -26,8 +28,17 @@ func JWTmiddleware(next http.Handler) http.Handler {
 			claims, err := helpers.GetJWTClaims(r, jwtToken)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode("Unauthorized")
+				fmt.Println(err)
 			}
+			vars := mux.Vars(r)
+			resourceid, _ := strconv.Atoi(vars["id"])
+
+			ownerid := int(claims["id"].(float64))
+
+			if db.IsResourceOwner(resourceid, ownerid) {
+				fmt.Println("owner")
+			}
+
 			ctx := context.WithValue(r.Context(), "claims", claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}

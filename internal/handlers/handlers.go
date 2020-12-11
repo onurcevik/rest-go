@@ -32,7 +32,6 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 //RegisterHandler handles requests to /request path and allows users to request a new user
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Content-Type", "application/json")
 	body, _ := ioutil.ReadAll(r.Body)
 	var user model.User
@@ -52,21 +51,17 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		insertQuery := `INSERT INTO users (username, password)
-		VALUES ($1,$2 );
+		VALUES ($1,$2 ) RETURNING ID;
 		`
+
+		var id int
 		registerpasswd, _ := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
-		res, err := db.Conn.Exec(insertQuery, name, string(registerpasswd))
+		_ = db.Conn.QueryRow(insertQuery, name, string(registerpasswd)).Scan(&id)
 
 		if err != nil {
 			//TODO log
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		id, err := res.LastInsertId()
-		if err != nil {
-			//TODO log
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-		fmt.Println("LAST INSERT: ", id)
 
 		jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
 			"id":       id,
@@ -74,8 +69,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			"exp":      time.Now().Add(time.Minute * 5).Unix(),
 		})
 
+		if err != nil {
+			//TODO log
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(struct{ token string }{jwtToken})
+		json.NewEncoder(w).Encode(jwtToken)
 		return
 	}
 	w.WriteHeader(http.StatusBadRequest)
@@ -121,7 +121,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
 		"id":       id,
 		"username": name,
-		"exp":      time.Now().Add(time.Minute * 5).Unix(),
+		"exp":      time.Now().Add(time.Minute * 10).Unix(),
 	})
 	if err != nil {
 		//TODO log
@@ -129,7 +129,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(struct{ token string }{jwtToken})
+	json.NewEncoder(w).Encode(jwtToken)
 
 	return
 }
@@ -139,8 +139,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 //ListNotesHandler lists all notes belong to the logged in user
 func ListNotesHandler(w http.ResponseWriter, r *http.Request) {
 	claims, _ := r.Context().Value("claims").(jwt.MapClaims)
-	username := claims["username"].(string)
-	notes, err := db.GetUserNotes(username)
+	ownerid := claims["id"].(int)
+	notes, err := db.GetUserNotes(ownerid)
 	if err != nil {
 		//TODO log
 		w.WriteHeader(http.StatusInternalServerError)
@@ -162,17 +162,16 @@ func NewNoteHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	if len(note.Content) > 0 {
-		claims, _ := r.Context().Value("claims").(jwt.MapClaims)
-		username := claims["username"].(string)
+		claims := r.Context().Value("claims").(map[string]interface{})
+		ownerid := claims["id"]
 		if err != nil {
 			//TODO log
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		insertQuery := `INSERT INTO notes (username, note)
-		VALUES ($1,$2 );
-		`
+		insertQuery := `INSERT INTO notes (ownerid, note)
+				VALUES ($1,$2 );`
 
-		_, err = db.Conn.Exec(insertQuery, username, note.Content)
+		_, err = db.Conn.Exec(insertQuery, ownerid, note.Content)
 
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(note)
