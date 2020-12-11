@@ -18,7 +18,7 @@ func GetRouter() *mux.Router {
 
 	router.Handle("/notes", middlewares.JWTmiddleware(http.HandlerFunc(handlers.ListNotesHandler))).Methods("GET")
 
-	router.Handle("/notes", middlewares.JWTmiddleware(http.HandlerFunc(handlers.NewNoteHandler))).Methods("POST")
+	router.Handle("/note", middlewares.JWTmiddleware(http.HandlerFunc(handlers.NewNoteHandler))).Methods("POST")
 	router.Handle("/note/{id}", middlewares.JWTmiddleware(http.HandlerFunc(handlers.GetNoteHandler))).Methods("GET")
 	router.Handle("/note/{id}", middlewares.JWTmiddleware(http.HandlerFunc(handlers.DeleteNoteHandler))).Methods("DELETE")
 

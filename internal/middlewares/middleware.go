@@ -28,16 +28,17 @@ func JWTmiddleware(next http.Handler) http.Handler {
 			claims, err := helpers.GetJWTClaims(r, jwtToken)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Println(err)
 			}
 			vars := mux.Vars(r)
 			resourceid, _ := strconv.Atoi(vars["id"])
-
 			ownerid := int(claims["id"].(float64))
 
 			if db.IsResourceOwner(resourceid, ownerid) {
-				fmt.Println("owner")
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte("You are not the owner of this resource"))
 			}
+
+			fmt.Println(db.IsResourceOwner(resourceid, ownerid))
 
 			ctx := context.WithValue(r.Context(), "claims", claims)
 			next.ServeHTTP(w, r.WithContext(ctx))

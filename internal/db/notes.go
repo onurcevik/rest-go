@@ -1,6 +1,8 @@
 package db
 
-import "github.com/onurcevik/restful/internal/model"
+import (
+	"github.com/onurcevik/restful/internal/model"
+)
 
 func GetUserNotes(id int) ([]model.Note, error) {
 	var notes []model.Note
@@ -33,9 +35,7 @@ func GetUserNotes(id int) ([]model.Note, error) {
 func IsResourceOwner(resourceid, ownerid int) bool {
 	var oid int
 	sqlstmnt := `SELECT ownerid FROM notes  WHERE notes.id=$1`
-
-	_ = Conn.QueryRow(sqlstmnt, resourceid, ownerid).Scan(&oid)
-
+	_ = Conn.QueryRow(sqlstmnt, resourceid).Scan(&oid)
 	if oid != ownerid {
 		return false
 	}

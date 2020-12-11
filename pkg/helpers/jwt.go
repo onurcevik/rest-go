@@ -21,12 +21,9 @@ func GetJWTClaims(r *http.Request, jwtToken string) (map[string]interface{}, err
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method")
 		}
-
 		return []byte(jwtsecret), nil
-
 	})
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		//username := claims["username"].(string)
 		return claims, nil
 	}
 	return nil, err
