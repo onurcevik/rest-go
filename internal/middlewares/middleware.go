@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,11 +15,7 @@ import (
 
 func JWTmiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO SIL
-		fmt.Println("Authoriz:", r.Header.Get("Authorization"))
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
-		//TODO SIL
-		fmt.Println("Header", authHeader)
 		if len(authHeader) != 2 {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Malformed Token"))
@@ -27,19 +23,20 @@ func JWTmiddleware(next http.Handler) http.Handler {
 			jwtToken := authHeader[1]
 			claims, err := helpers.GetJWTClaims(r, jwtToken)
 			if err != nil {
+				log.Fatalln(err)
 				w.WriteHeader(http.StatusUnauthorized)
+				return
 			}
 			vars := mux.Vars(r)
 			resourceid, _ := strconv.Atoi(vars["id"])
 			ownerid := int(claims["id"].(float64))
-
-			if db.IsResourceOwner(resourceid, ownerid) {
-				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte("You are not the owner of this resource"))
+			if r.URL.Path != "/" && r.URL.Path != "/note" {
+				if !db.IsResourceOwner(resourceid, ownerid) {
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Write([]byte("You are not the owner of this resource"))
+					return
+				}
 			}
-
-			fmt.Println(db.IsResourceOwner(resourceid, ownerid))
-
 			ctx := context.WithValue(r.Context(), "claims", claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}

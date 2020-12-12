@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -35,6 +36,7 @@ func GenerateJWTTokenWithClaims(username string, claims jwt.MapClaims) (string, 
 
 	t, err := token.SignedString([]byte(jwtsecret))
 	if err != nil {
+		log.Fatalln(err)
 		return "", err
 	}
 	return t, err
