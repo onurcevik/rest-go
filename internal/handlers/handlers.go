@@ -25,11 +25,12 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	claims := r.Context().Value("claims").(map[string]interface{})
 	username, ok := claims["username"].(string)
-
 	if len(username) == 0 || !ok {
+		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode("Please Login or Register")
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Welcome " + username)
 	return
 }
@@ -68,11 +69,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		var id int
 		registerpasswd, _ := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
 		_ = db.Conn.QueryRow(insertQuery, name, string(registerpasswd)).Scan(&id)
-
+		fmt.Println("REGISTER ID", id)
 		jwtToken, err := helpers.GenerateJWTTokenWithClaims(name, jwt.MapClaims{
 			"id":       id,
 			"username": name,
-			"exp":      time.Now().Add(time.Minute * 5).Unix(),
+			//"exp":      time.Now().Add(time.Minute * 10).Unix(),
 		})
 
 		if err != nil {
@@ -121,6 +122,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode("User with that username doesnt exist")
 		return
 	case nil:
+		fmt.Println("LOGIN ID", id)
 	default:
 		panic(err)
 	}
@@ -144,15 +146,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(jwtToken)
 	return
 }
 
 //ListNotesHandler lists all notes belong to the logged in user
 func ListNotesHandler(w http.ResponseWriter, r *http.Request) {
-	claims, _ := r.Context().Value("claims").(jwt.MapClaims)
-	ownerid := claims["id"].(int)
+	claims := r.Context().Value("claims").(map[string]interface{})
+	ownerid := int(claims["id"].(float64))
 	notes, err := db.GetUserNotes(ownerid)
 	if err != nil {
 		//TODO log
@@ -180,6 +182,7 @@ func NewNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if len(note.Content) > 0 {
 		claims := r.Context().Value("claims").(map[string]interface{})
 		ownerid := claims["id"]
+		fmt.Println("CRETE ", ownerid)
 		if err != nil {
 			//TODO log
 			log.Fatalln(err)
@@ -187,9 +190,11 @@ func NewNoteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		insertQuery := `INSERT INTO notes (ownerid, note)
-				VALUES ($1,$2 );`
+				VALUES ($1,$2 ) RETURNING id;`
 
-		_, err = db.Conn.Exec(insertQuery, ownerid, note.Content)
+		var id int
+		_ = db.Conn.QueryRow(insertQuery, ownerid, note.Content).Scan(&id)
+		note.ID = id
 
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(note)
@@ -206,6 +211,8 @@ func GetNoteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	i := vars["id"]
+
+	log.Println("key doesnt exist")
 	selectQuery := `SELECT id,note FROM notes WHERE id=$1;`
 	row := db.Conn.QueryRow(selectQuery, i)
 
@@ -221,12 +228,18 @@ func GetNoteHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		json.NewEncoder(w).Encode(model.Note{ID: integerID, Content: content})
+		var n model.Note
+		n.ID = integerID
+		n.Content = content
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(n)
 		return
 	default:
 		log.Fatalln(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
 	return
 }
 

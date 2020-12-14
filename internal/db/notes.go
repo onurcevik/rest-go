@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/onurcevik/restful/internal/model"
 )
 
@@ -36,6 +38,8 @@ func IsResourceOwner(resourceid, ownerid int) bool {
 	var oid int
 	sqlstmnt := `SELECT ownerid FROM notes  WHERE notes.id=$1`
 	_ = Conn.QueryRow(sqlstmnt, resourceid).Scan(&oid)
+	fmt.Println("oid", oid)
+	fmt.Println("ownerid", ownerid)
 	if oid != ownerid {
 		return false
 	}

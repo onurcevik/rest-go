@@ -21,7 +21,7 @@ func JWTmiddleware(next http.Handler) http.Handler {
 			w.Write([]byte("Malformed Token"))
 		} else {
 			jwtToken := authHeader[1]
-			claims, err := helpers.GetJWTClaims(r, jwtToken)
+			claims, err := helpers.GetJWTClaims(jwtToken)
 			if err != nil {
 				log.Fatalln(err)
 				w.WriteHeader(http.StatusUnauthorized)
@@ -30,10 +30,11 @@ func JWTmiddleware(next http.Handler) http.Handler {
 			vars := mux.Vars(r)
 			resourceid, _ := strconv.Atoi(vars["id"])
 			ownerid := int(claims["id"].(float64))
-			if r.URL.Path != "/" && r.URL.Path != "/note" {
+			if r.URL.Path != "/" && r.URL.Path != "/note" && r.URL.Path != "/notes" {
+
 				if !db.IsResourceOwner(resourceid, ownerid) {
 					w.WriteHeader(http.StatusUnauthorized)
-					w.Write([]byte("You are not the owner of this resource"))
+					w.Write([]byte("You dont have any notes with given ID"))
 					return
 				}
 			}

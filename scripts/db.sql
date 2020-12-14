@@ -1,6 +1,3 @@
-
-
-
 CREATE TABLE users (
      id SERIAL PRIMARY KEY,
      username VARCHAR ( 500 ) UNIQUE NOT NULL,  

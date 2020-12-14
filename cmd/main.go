@@ -22,6 +22,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	r := router.GetRouter()
 	//db.StartDatabase()
 	http.ListenAndServe(":8080", r)
