@@ -1,11 +1,9 @@
-package middlewares_test
+package api_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/onurcevik/restful/internal/middlewares"
 )
 
 func TestJWTMiddleware(t *testing.T) {

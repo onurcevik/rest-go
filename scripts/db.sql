@@ -7,5 +7,5 @@ CREATE TABLE users (
 CREATE TABLE notes(
     id SERIAL PRIMARY KEY,
     ownerid INTEGER NOT NULL,
-    note TEXT NOT NULL
+    content TEXT NOT NULL
 );

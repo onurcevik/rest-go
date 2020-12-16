@@ -1,4 +1,4 @@
-package middlewares
+package api
 
 import (
 	"context"
@@ -7,13 +7,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/onurcevik/restful/internal/db"
-
 	"github.com/gorilla/mux"
 	"github.com/onurcevik/restful/pkg/helpers"
 )
 
-func JWTmiddleware(next http.Handler) http.Handler {
+type MiddlewareController struct {
+	*API
+}
+
+func (md MiddlewareController) JWTmiddleware(next http.Handler) http.Handler {
+	db := md.API.GetDB()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(authHeader) != 2 {

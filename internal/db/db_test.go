@@ -13,3 +13,10 @@ const notestablecreationquery = ` CREATE TABLE IF NOT EXISTS notes (
 	password VARCHAR ( 500 ) NOT NULL
 );
 `
+func ensureTableExists() {
+    if _, err := a.DB.Exec(userstablecreationquery); err != nil {
+        log.Fatal(err)
+    }
+}
+
+func 

@@ -20,4 +20,5 @@ func Ping(client *redis.Client) (string, error) {
 		return "", err
 	}
 	return pong, nil
+	var d interface{}
 }
