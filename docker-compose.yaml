@@ -1,0 +1,53 @@
+version: '3'
+services:
+  app:
+    container_name: full_app
+    build:
+      context: .
+      dockerfile: cmd/Dockerfile
+    ports: 
+      - 8080:8080 
+    restart: on-failure
+    volumes:
+      - api:/usr/src/app/
+    depends_on:
+      - redis-cache
+      - postgres-db         
+    networks:
+      - fullstack
+
+  redis-cache:
+      image: "redis:alpine"
+      container_name: redis_go
+      ports:
+         - "6379:6379"
+      networks:
+        - fullstack 
+
+  postgres-db:
+    image: postgres:latest
+    container_name: rest_postgres
+    environment:
+      - POSTGRES_USER=${pguser}  
+      - POSTGRES_PASSWORD=${pgpass}
+      - POSTGRES_DB=${pgdbname}
+      - DATABASE_HOST=${pghost} 
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+    networks:
+      - fullstack
+
+volumes:
+  api:
+  database_postgres:                 
+
+
+  
+
+# Networks to be created to facilitate communication between containers
+networks:
+  fullstack:
+    driver: bridge
+
