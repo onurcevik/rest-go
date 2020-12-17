@@ -1,9 +1,7 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -24,37 +22,22 @@ func (lc LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	name, pwd := user.Username, user.Password
-	selectQuery := `SELECT id,password FROM users WHERE username=$1;` // Simdilik burada kalsin ileride db paketinin icine tasi
-	row := db.Conn.QueryRow(selectQuery, name)
-
-	if row.Err() != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Could not find user in database ")
-		return
-	}
-
 	var id int
 	var hash string
 
-	switch err := row.Scan(&id, &hash); err {
-	case sql.ErrNoRows:
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("User with that username doesnt exist")
-		return
-	case nil:
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
+	name, pwd := user.Username, user.Password
+	selectQuery := `SELECT id,password FROM users WHERE username=$1;` // Simdilik burada kalsin ileride db paketinin icine tasi
+	if err := db.Conn.QueryRow(selectQuery, name).Scan(&id, &hash); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode("Could not find user in database ")
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(pwd))
 	if err != nil {
-		log.Fatalln(err)
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode("Wrong username and/or password.")
 		return
@@ -66,12 +49,10 @@ func (lc LoginController) Create(w http.ResponseWriter, r *http.Request) {
 		"exp":      time.Now().Add(time.Minute * 30).Unix(),
 	})
 	if err != nil {
-		//TODO log
-		log.Fatalln(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(jwtToken)
 	return
 }

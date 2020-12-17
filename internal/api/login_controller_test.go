@@ -22,7 +22,7 @@ func TestLoginHandler(t *testing.T) {
 	handler := http.HandlerFunc(api.LoginController{API: &s.API}.Create)
 	handler.ServeHTTP(rr, req)
 
-	if status := rr.Code; status != http.StatusOK {
+	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusCreated)
 	}

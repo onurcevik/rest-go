@@ -27,8 +27,8 @@ type DBResource interface {
 
 //Creates and returns new Database with connection
 func NewDB(config PostgresConfig) Database {
-	d := &Database{}
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
+	d := Database{}
+	psqlInfo := fmt.Sprintf("host='%s' port=%d user='%s' password='%s' dbname='%s' sslmode=disable",
 		config.Host, config.Port, config.User, config.Password, config.DBname)
 	var err error
 	d.Conn, err = sql.Open("postgres", psqlInfo)
@@ -39,7 +39,7 @@ func NewDB(config PostgresConfig) Database {
 	if err != nil {
 		panic(err)
 	}
-	return *d
+	return d
 }
 
 func (db *Database) Insert(dbr DBResource, parameters ...interface{}) (int, error) {
