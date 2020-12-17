@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -28,23 +27,29 @@ func (lc LoginController) Create(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	name, pwd := user.Username, user.Password
 	selectQuery := `SELECT id,password FROM users WHERE username=$1;` // Simdilik burada kalsin ileride db paketinin icine tasi
 	row := db.Conn.QueryRow(selectQuery, name)
 
+	if row.Err() != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Could not find user in database ")
+		return
+	}
+
 	var id int
 	var hash string
 
-	//TODO println sil
 	switch err := row.Scan(&id, &hash); err {
 	case sql.ErrNoRows:
-		log.Fatalln(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode("User with that username doesnt exist")
 		return
 	case nil:
-		fmt.Println("LOGIN ID", id)
 	default:
-		panic(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(pwd))

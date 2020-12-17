@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/onurcevik/restful/internal/cache"
+
 	"github.com/gorilla/mux"
 	"github.com/onurcevik/restful/internal/model"
 )
@@ -17,9 +19,15 @@ type NoteController struct {
 	*API
 }
 
+var (
+	//NoteControllerin icine tasi
+	notescache cache.NotesCache = cache.NewRedisCache("localhost:6379", 0, 20)
+)
+
 //Index lists all notes belong to the logged in user
 func (nc NoteController) Index(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
+
 	claims := r.Context().Value("claims").(map[string]interface{})
 	ownerid := int(claims["id"].(float64))
 	notes, err := db.GetUserNotes(ownerid)
@@ -53,11 +61,12 @@ func (nc NoteController) Create(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		_, err = db.Insert(&note, ownerid, note.Content)
+		insertID, err := db.Insert(&note, ownerid, note.Content)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		note.ID = insertID
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(note)
 		return
@@ -73,41 +82,53 @@ func (nc NoteController) Show(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	i := vars["id"]
+	var n model.Note   //
+	var cn *model.Note //cache note
 
-	selectQuery := `SELECT id,note FROM notes WHERE id=$1;`
-	row := db.Conn.QueryRow(selectQuery, i)
+	cn, _ = notescache.Get(i)
 
-	var id, content string
+	if cn == nil {
+		selectQuery := `SELECT id,content FROM notes WHERE id=$1;`
+		row := db.Conn.QueryRow(selectQuery, i)
 
-	switch err := row.Scan(&id, &content); err {
-	case sql.ErrNoRows:
-		fmt.Println("Note doesnt exist in database")
-	case nil:
-		w.WriteHeader(http.StatusOK)
-		integerID, err := strconv.Atoi(id)
-		if err != nil {
+		var id, content string
+
+		switch err := row.Scan(&id, &content); err {
+		case sql.ErrNoRows:
+			fmt.Println("Note doesnt exist in database")
+		case nil:
+			w.WriteHeader(http.StatusOK)
+			integerID, err := strconv.Atoi(id)
+			if err != nil {
+
+			}
+
+			n.ID = integerID
+			n.Content = content
+
+		default:
 			log.Fatalln(err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		var n model.Note
-		n.ID = integerID
-		n.Content = content
+		err := notescache.Set(i, n)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(n)
 		return
-	default:
-		log.Fatalln(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(cn)
 	return
 }
 
 //Update
 func (nc NoteController) Update(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
-	var note model.Note
+	var note *model.Note
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&note)
 	if err != nil {
@@ -118,15 +139,21 @@ func (nc NoteController) Update(w http.ResponseWriter, r *http.Request) {
 	if len(note.Content) > 0 {
 		vars := mux.Vars(r)
 		id := vars["id"]
-		uID, err = db.Update(&note, id, note.Content)
+		uID, err = db.Update(note, id, note.Content)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		note.ID = uID
+		err := notescache.Set(id, *note)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("Note " + string(uID) + " Updated")
+
+	json.NewEncoder(w).Encode("Note " + fmt.Sprintf("Note %d deleted", uID) + " Updated")
 	return
 
 }
@@ -144,7 +171,8 @@ func (nc NoteController) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("Note" + string(dID) + "deleted")
+
+	json.NewEncoder(w).Encode(fmt.Sprintf("Note %d deleted", dID))
 	return
 
 }

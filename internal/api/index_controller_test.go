@@ -1,4 +1,4 @@
-package handlers_test
+package api_test
 
 import (
 	"context"
@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/onurcevik/restful/internal/handlers"
-	"github.com/onurcevik/restful/pkg/helpers"
+	"github.com/onurcevik/restful/internal/api"
 
 	"github.com/onurcevik/restful/internal/model"
+	"github.com/onurcevik/restful/pkg/helpers"
 )
 
 //testdata
@@ -56,14 +56,14 @@ func init() {
 
 }
 
-//IndexHandler handles requests to / path
 func TestIndexHandler(t *testing.T) {
+
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handlers.IndexHandler)
+	handler := http.HandlerFunc(api.IndexController{}.Index)
 
 	for k, _ := range testdatas {
 		claims, err := helpers.GetJWTClaims(testdatas[k].JWT)

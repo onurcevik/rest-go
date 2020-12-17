@@ -3,9 +3,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"os"
-	"strconv"
+
+	_ "github.com/lib/pq"
 )
 
 //Database struct is used to transfer database connection between modules
@@ -13,29 +12,24 @@ type Database struct {
 	Conn *sql.DB
 }
 
+type PostgresConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DBname   string
+}
+
 //DBResource is usedfor  creating interfacee between models and databese methods
 type DBResource interface {
 	TableName() string
 }
 
-func getPostgresDataSource() string {
-
-	host := os.Getenv("pghost")
-	port, err := strconv.Atoi(os.Getenv("pgport"))
-	if err != nil {
-		log.Fatalln()
-	}
-	user := os.Getenv("pguser")
-	password := os.Getenv("pgpass")
-	dbname := os.Getenv("pgdbname")
-
-	return fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-}
-
 //Creates and returns new Database with connection
-func NewDB() Database {
-	d := Database{}
-	psqlInfo := getPostgresDataSource()
+func NewDB(config PostgresConfig) Database {
+	d := &Database{}
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
+		config.Host, config.Port, config.User, config.Password, config.DBname)
 	var err error
 	d.Conn, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -45,7 +39,7 @@ func NewDB() Database {
 	if err != nil {
 		panic(err)
 	}
-	return d
+	return *d
 }
 
 func (db *Database) Insert(dbr DBResource, parameters ...interface{}) (int, error) {

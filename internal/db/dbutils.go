@@ -1,8 +1,6 @@
 package db
 
 import (
-	"fmt"
-
 	"github.com/onurcevik/restful/internal/model"
 )
 
@@ -15,7 +13,7 @@ func (db Database) DoesUserExist(username string) bool {
 
 func (db Database) GetUserNotes(id int) ([]model.Note, error) {
 	var notes []model.Note
-	sqlstmnt := `SELECT id,note FROM notes WHERE notes.ownerid=$1`
+	sqlstmnt := `SELECT id,content FROM notes WHERE notes.ownerid=$1`
 	rows, err := db.Conn.Query(sqlstmnt, id)
 	if err != nil {
 		return nil, err
@@ -45,8 +43,6 @@ func (db Database) IsResourceOwner(resourceid, ownerid int) bool {
 	var oid int
 	sqlstmnt := `SELECT ownerid FROM notes  WHERE notes.id=$1`
 	_ = db.Conn.QueryRow(sqlstmnt, resourceid).Scan(&oid)
-	fmt.Println("oid", oid)
-	fmt.Println("ownerid", ownerid)
 	if oid != ownerid {
 		return false
 	}
