@@ -3,9 +3,9 @@ package cache_test
 import (
 	"testing"
 
-	"github.com/onurcevik/restful/internal/model"
+	"github.com/onurcevik/rest-go/internal/model"
 
-	"github.com/onurcevik/restful/internal/cache"
+	"github.com/onurcevik/rest-go/internal/cache"
 )
 
 func TestCache(t *testing.T) {

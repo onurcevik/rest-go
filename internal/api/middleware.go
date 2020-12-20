@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/onurcevik/restful/pkg/helpers"
+	"github.com/onurcevik/rest-go/pkg/helpers"
 )
 
 type MiddlewareController struct {

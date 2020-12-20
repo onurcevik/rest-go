@@ -14,14 +14,23 @@ github.com/go-redis/redis/v8/internal/pool
 github.com/go-redis/redis/v8/internal/proto
 github.com/go-redis/redis/v8/internal/rand
 github.com/go-redis/redis/v8/internal/util
+# github.com/gobuffalo/envy v1.9.0
+## explicit
+github.com/gobuffalo/envy
 # github.com/gorilla/mux v1.8.0
 ## explicit
 github.com/gorilla/mux
+# github.com/joho/godotenv v1.3.0
+github.com/joho/godotenv
 # github.com/lib/pq v1.9.0
 ## explicit
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
+# github.com/rogpeppe/go-internal v1.3.2
+github.com/rogpeppe/go-internal/modfile
+github.com/rogpeppe/go-internal/module
+github.com/rogpeppe/go-internal/semver
 # go.opentelemetry.io/otel v0.14.0
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/codes

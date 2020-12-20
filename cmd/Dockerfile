@@ -29,7 +29,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o cmd/main cmd/main
 ENV pghost="localhost"
 ENV pgport="5432"
 ENV pguser="postgres"
-ENV pgpass="1234"
+ENV pgpass="332"
 ENV pgdbname="restgo"
 
 # Start a new stage from scratch

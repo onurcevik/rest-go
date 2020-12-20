@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/onurcevik/restful/internal/db"
+	"github.com/onurcevik/rest-go/internal/db"
 )
 
 type API struct {

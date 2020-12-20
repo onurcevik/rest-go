@@ -1,13 +1,14 @@
 package api
 
 import (
-	"github.com/gobuffalo/envy"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/onurcevik/restful/internal/db"
+	"github.com/gobuffalo/envy"
+
+	"github.com/onurcevik/rest-go/internal/db"
 )
 
 var (
@@ -28,7 +29,7 @@ func NewSuite() *Suite {
 
 	config := &db.PostgresConfig{
 		Host:     os.Getenv("pghost"),
-		Port:     5432,
+		Port:     os.Getenv("pgport"),
 		User:     os.Getenv("pguser"),
 		Password: os.Getenv("pgpass"),
 		DBname:   os.Getenv("pgdbname"),

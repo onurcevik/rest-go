@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/onurcevik/restful/internal/model"
+	"github.com/onurcevik/rest-go/internal/model"
 )
 
 func (db Database) DoesUserExist(username string) bool {

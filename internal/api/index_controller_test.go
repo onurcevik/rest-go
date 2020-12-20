@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/onurcevik/restful/internal/api"
+	"github.com/onurcevik/rest-go/internal/api"
 
-	"github.com/onurcevik/restful/internal/model"
-	"github.com/onurcevik/restful/pkg/helpers"
+	"github.com/onurcevik/rest-go/internal/model"
+	"github.com/onurcevik/rest-go/pkg/helpers"
 )
 
 //testdata

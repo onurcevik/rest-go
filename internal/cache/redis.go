@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/onurcevik/restful/internal/model"
+	"github.com/onurcevik/rest-go/internal/model"
 )
 
 type NotesCache interface {

@@ -27,11 +27,7 @@ services:
   postgres-db:
     image: postgres:latest
     container_name: rest_postgres
-    environment:
-      - POSTGRES_USER=${pguser}  
-      - POSTGRES_PASSWORD=${pgpass}
-      - POSTGRES_DB=${pgdbname}
-      - DATABASE_HOST=${pghost} 
+    env_file: .env
     ports:
       - '5432:5432'
     volumes:
@@ -42,9 +38,6 @@ services:
 volumes:
   api:
   database_postgres:                 
-
-
-  
 
 # Networks to be created to facilitate communication between containers
 networks:

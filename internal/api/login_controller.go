@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/onurcevik/restful/internal/model"
-	"github.com/onurcevik/restful/pkg/helpers"
+	"github.com/onurcevik/rest-go/internal/model"
+	"github.com/onurcevik/rest-go/pkg/helpers"
 	"golang.org/x/crypto/bcrypt"
 )
 

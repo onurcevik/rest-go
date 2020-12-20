@@ -14,7 +14,7 @@ type Database struct {
 
 type PostgresConfig struct {
 	Host     string
-	Port     int
+	Port     string
 	User     string
 	Password string
 	DBname   string
@@ -28,8 +28,9 @@ type DBResource interface {
 //Creates and returns new Database with connection
 func NewDB(config PostgresConfig) Database {
 	d := Database{}
-	psqlInfo := fmt.Sprintf("host='%s' port=%d user='%s' password='%s' dbname='%s' sslmode=disable",
-		config.Host, config.Port, config.User, config.Password, config.DBname)
+	psqlInfo := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
+		config.User, config.Password, config.Host, config.Port, config.DBname)
+
 	var err error
 	d.Conn, err = sql.Open("postgres", psqlInfo)
 	if err != nil {

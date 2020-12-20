@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/onurcevik/restful/internal/db"
+	"github.com/onurcevik/rest-go/internal/db"
 )
 
 const userstablecreationquery = ` CREATE TABLE IF NOT EXISTS users (

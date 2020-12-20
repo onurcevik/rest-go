@@ -4,21 +4,18 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/onurcevik/restful/internal/db"
+	"github.com/onurcevik/rest-go/internal/db"
 
-	"github.com/onurcevik/restful/internal/api"
+	"github.com/onurcevik/rest-go/internal/api"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	// p, err := strconv.Atoi(os.Getenv("pgport"))
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
+
 	config := &db.PostgresConfig{
 		Host:     os.Getenv("pghost"),
-		Port:     5432,
+		Port:     os.Getenv("pgport"),
 		User:     os.Getenv("pguser"),
 		Password: os.Getenv("pgpass"),
 		DBname:   os.Getenv("pgdbname"),

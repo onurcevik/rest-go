@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/onurcevik/restful/internal/api"
+	"github.com/onurcevik/rest-go/internal/api"
 )
 
 func TestLoginHandler(t *testing.T) {

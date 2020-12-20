@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/onurcevik/restful/internal/cache"
+	"github.com/onurcevik/rest-go/internal/cache"
 
 	"github.com/gorilla/mux"
-	"github.com/onurcevik/restful/internal/model"
+	"github.com/onurcevik/rest-go/internal/model"
 )
 
 type NoteController struct {
