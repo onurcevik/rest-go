@@ -1,0 +1,233 @@
+basePath: /
+definitions:
+  model.Note:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+    type: object
+  model.User:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is an example restful api writtin with go
+  termsOfService: http://swagger.io/terms/
+  title: Restful API with Go
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: user index
+      operationId: user-index
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: welcome
+          schema:
+            type: string
+        "401":
+          description: Plese login or register
+          schema:
+            type: string
+      summary: Index welcomes logged in user
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: LoginController create handler
+      operationId: login
+      parameters:
+      - description: User Cred
+        in: body
+        name: loginData
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: jwt
+          schema:
+            type: string
+        "400":
+          description: Login error
+          schema:
+            type: string
+        "403":
+          description: Login error
+          schema:
+            type: string
+        "404":
+          description: Login error
+          schema:
+            type: string
+        "500":
+          description: Login error
+          schema:
+            type: string
+      summary: Returns user a JWT Token if logged in successfully
+  /note:
+    post:
+      consumes:
+      - application/json
+      description: NoteController Create handler
+      operationId: note-create
+      parameters:
+      - description: note content
+        in: body
+        name: registerData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/model.Note'
+        "400":
+          description: note create error
+          schema:
+            type: string
+        "500":
+          description: note create error
+          schema:
+            type: string
+      summary: Creates a new note for user
+  /note/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: NoteController Delete handler
+      operationId: note-delete
+      parameters:
+      - description: ID of the note to be delete
+        in: path
+        name: noteID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/model.Note'
+        "500":
+          description: note delete error
+          schema:
+            type: string
+      summary: Delete the note with given ID
+    get:
+      consumes:
+      - application/json
+      description: NoteController Show handler
+      operationId: note-show
+      parameters:
+      - description: note id
+        in: path
+        name: noteID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/model.Note'
+        "500":
+          description: note show error
+          schema:
+            type: string
+      summary: shows a note for a given ID
+    post:
+      consumes:
+      - application/json
+      description: NoteController Update handler
+      operationId: note-update
+      parameters:
+      - description: ID of the note to be updated
+        in: path
+        name: noteID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: note
+          schema:
+            $ref: '#/definitions/model.Note'
+        "500":
+          description: note update error
+          schema:
+            type: string
+      summary: Update content of a note with a given ID
+  /notes:
+    get:
+      description: NoteController Index handler
+      operationId: note-index
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: notes
+          schema:
+            items:
+              $ref: '#/definitions/model.Note'
+            type: array
+        "500":
+          description: note index error
+          schema:
+            type: string
+      summary: Returns all notes for user
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: RegisterController create handler
+      operationId: register
+      parameters:
+      - description: User Cred
+        in: body
+        name: registerData
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: jwt
+          schema:
+            type: string
+        "400":
+          description: Register error
+          schema:
+            type: string
+        "403":
+          description: Register error
+          schema:
+            type: string
+        "500":
+          description: Register error
+          schema:
+            type: string
+      summary: Returns user a JWT Token if user registered successfully
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

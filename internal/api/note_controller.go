@@ -25,6 +25,13 @@ var (
 )
 
 //Index lists all notes belong to the logged in user
+// @Summary Returns all notes for user
+// @Description NoteController Index handler
+// @ID note-index
+// @Produce json
+// @Success 200 {array} model.Note "notes"
+// @Failure 500 {string} string "note index error"
+// @Router /notes [get]
 func (nc NoteController) Index(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
 
@@ -43,6 +50,15 @@ func (nc NoteController) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 //Create creates a new note
+// @Summary Creates a new note for user
+// @Description NoteController Create handler
+// @ID note-create
+// @Accept  json
+// @Produce json
+// @Param registerData body string true "note content"
+// @Success 200 {object} model.Note "note"
+// @Failure 400,500 {string} string "note create error"
+// @Router /note [post]
 func (nc NoteController) Create(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
 	var note model.Note
@@ -76,7 +92,16 @@ func (nc NoteController) Create(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//Show gets a note with a given ID
+//Show get a note of a user with given ID
+// @Summary shows a note for a given ID
+// @Description NoteController Show handler
+// @ID note-show
+// @Accept  json
+// @Produce json
+// @Param noteID path string true "note id"
+// @Success 200 {object} model.Note "note"
+// @Failure 500 {string} string "note show error"
+// @Router /note/{id} [get]
 func (nc NoteController) Show(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
 	w.Header().Set("Content-Type", "application/json")
@@ -98,10 +123,7 @@ func (nc NoteController) Show(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Note doesnt exist in database")
 		case nil:
 			w.WriteHeader(http.StatusOK)
-			integerID, err := strconv.Atoi(id)
-			if err != nil {
-
-			}
+			integerID, _ := strconv.Atoi(id)
 
 			n.ID = integerID
 			n.Content = content
@@ -125,7 +147,16 @@ func (nc NoteController) Show(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//Update
+//Update content of a note of a user with given ID
+// @Summary Update content of a note with a given ID
+// @Description NoteController Update handler
+// @ID note-update
+// @Accept  json
+// @Produce  json
+// @Param noteID path string true "ID of the note to be updated"
+// @Success 200 {object} model.Note "note"
+// @Failure 500 {string} string "note update error"
+// @Router /note/{id} [post]
 func (nc NoteController) Update(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
 	var note *model.Note
@@ -158,7 +189,16 @@ func (nc NoteController) Update(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//Delete deletes a note with given ID
+//Delete note of a user with given ID
+// @Summary Delete the note with given ID
+// @Description NoteController Delete handler
+// @ID note-delete
+// @Accept  json
+// @Produce  json
+// @Param noteID path string true "ID of the note to be delete"
+// @Success 200 {object} model.Note "note"
+// @Failure 500 {string} string "note delete error"
+// @Router /note/{id} [delete]
 func (nc NoteController) Delete(w http.ResponseWriter, r *http.Request) {
 	db := nc.API.GetDB()
 	w.Header().Set("Content-Type", "application/json")

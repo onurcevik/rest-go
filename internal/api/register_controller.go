@@ -17,6 +17,16 @@ type RegisterController struct {
 	*API
 }
 
+//Create godoc
+// @Summary Returns user a JWT Token if user registered successfully
+// @Description RegisterController create handler
+// @ID register
+// @Accept  json
+// @Produce json
+// @Param registerData body model.User true "User Cred"
+// @Success 201 {string} string "jwt"
+// @Failure 400,403,500 {string} string "Register error"
+// @Router /register [post]
 func (rg RegisterController) Create(w http.ResponseWriter, r *http.Request) {
 	db := rg.API.GetDB()
 	w.Header().Set("Content-Type", "application/json")

@@ -16,6 +16,16 @@ type LoginController struct {
 	*API
 }
 
+//Create godoc
+// @Summary Returns user a JWT Token if logged in successfully
+// @Description LoginController create handler
+// @ID login
+// @Accept  json
+// @Produce json
+// @Param loginData body model.User true "User Cred"
+// @Success 201 {string} string "jwt"
+// @Failure 400,403,404,500 {string} string "Login error"
+// @Router /login [post]
 func (lc LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	db := lc.API.GetDB()
 	var user model.User
@@ -23,6 +33,7 @@ func (lc LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Please submit data in requested JSON format username,passowrd")
 		return
 	}
 	var id int
@@ -50,6 +61,7 @@ func (lc LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode("Server Error")
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

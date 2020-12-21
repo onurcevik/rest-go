@@ -4,13 +4,22 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/onurcevik/rest-go/internal/db"
-
-	"github.com/onurcevik/rest-go/internal/api"
-
 	_ "github.com/lib/pq"
+	_ "github.com/onurcevik/rest-go/docs"
+	"github.com/onurcevik/rest-go/internal/api"
+	"github.com/onurcevik/rest-go/internal/db"
 )
 
+// @title Restful API with Go
+// @version 1.0
+// @description This is an example restful api writtin with go
+// @termsOfService http://swagger.io/terms/
+
+// @host localhost:8080
+// @BasePath /
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 
 	config := &db.PostgresConfig{
